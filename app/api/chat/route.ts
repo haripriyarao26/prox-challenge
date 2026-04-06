@@ -36,10 +36,7 @@ export async function POST(req: Request) {
     let responseText = "";
 
     for await (const message of result) {
-      // The SDK stream contains various event types.
-      // We look for 'assistant' messages which contain the text response.
       if (message.type === "assistant") {
-        // Use a type assertion or check for the property to satisfy TS
         const content = (message as any).content || (message as any).text || "";
         responseText += content;
       }
@@ -49,8 +46,12 @@ export async function POST(req: Request) {
       content: responseText
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Agent Error:", error);
-    return NextResponse.json({ error: "Agent failed to respond" }, { status: 500 });
+    return NextResponse.json({ 
+      error: "Agent failed to respond", 
+      details: error?.message || String(error),
+      stack: error?.stack 
+    }, { status: 500 });
   }
 }

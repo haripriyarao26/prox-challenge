@@ -75,11 +75,9 @@ We should be running your agent within 2 minutes of cloning your repo:
 git clone <your-fork>
 cd <your-fork>
 cp .env.example .env   # we plug in our own Anthropic API key
-# your install command (npm install, uv install, etc.)
-# your run command (npm run dev, python app.py, etc.)
+npm install
+npm run dev
 ```
-
-If it takes longer than that to set up, that's a problem.
 
 ## What to Submit
 
@@ -87,6 +85,37 @@ If it takes longer than that to set up, that's a problem.
 2. Build your solution.
 3. Submit your fork URL through the form at [useprox.com/join/challenge](https://useprox.com/join/challenge).
 
-## What Happens Next
+---
 
-We review submissions on a rolling basis and respond to every single one within a few days. Good luck.
+# Implementation Details
+
+## Architecture & Design Decisions
+For this challenge, I built a highly-immersive **Industrial HUD** using Next.js 15, Tailwind CSS, and Framer Motion. I chose to move away from a traditional "chatbot" UI to create an "Expert-in-the-Loop" experience. The application features a split-pane design where natural language reasoning happens on the left, and **Dynamic Interactive Artifacts** render on the right. 
+
+The backend relies on the **Anthropic Claude Agent SDK** (`@anthropic-ai/claude-agent-sdk`). Why the Agent SDK instead of standard Messages API? Because it natively handles the complex tool-loop and recursive reasoning required to dynamically update parameters and visually render feedback.
+
+## Knowledge Representation
+Raw PDFs are notoriously difficult for standard OCR, especially when dealing with Polarity matrices and labeled diagrams.
+- **Structured Knowledge Base (`lib/knowledge.ts`)**: I extracted the critical constraints (Duty Cycle Matrices, Socket Polarity configurations, and Troubleshooting logic) into strongly-typed code. This prevents the LLM from hallucinating voltages or amperage limits.
+- **Visual Callbacks**: Instead of writing prose to describe technical schematics, the Agent is instructed via its System Prompt to emit specialized `visual` code blocks anytime a user asks for setup instructions. The Next.js frontend catches these blocks and renders React interactive diagrams (like the Polarity UI).
+
+## Quick Start
+1. Ensure you have Node.js installed.
+2. Clone this repository.
+3. Add your key to the environment file:
+   ```bash
+   cp .env.example .env
+   # Add ANTHROPIC_API_KEY=your_key_here to .env
+   ```
+4. Run the application:
+   ```bash
+   npm install --legacy-peer-deps
+   npm run dev
+   ```
+5. Navigate to `http://localhost:3000`. Try asking: _"How do I set up my machine for TIG welding?"_ to see the visual artifact engine in action.
+
+## Testing
+An automated test script using the headless Claude SDK is included to verify technical constraints against the knowledge base:
+\`\`\`bash
+npm run test:agent
+\`\`\`

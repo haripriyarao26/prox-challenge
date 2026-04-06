@@ -94,6 +94,13 @@ For this challenge, I built a highly-immersive **Industrial HUD** using Next.js 
 
 The backend relies on the **Anthropic Claude Agent SDK** (`@anthropic-ai/claude-agent-sdk`). Why the Agent SDK instead of standard Messages API? Because it natively handles the complex tool-loop and recursive reasoning required to dynamically update parameters and visually render feedback.
 
+### Reverse-Engineered Multimodal Artifacts
+To satisfy the core requirement that "the agent must not be text-only," I reverse-engineered the Claude Artifacts protocol.
+When the Agent SDK encounters a cognitively complex task, its System Prompt instructs it to emit a specialized JSON payload wrapped in a \`\`\`visual\`\`\` code block. The frontend intercepts this stream and dynamically mounts React-based interactive components instead of rendering text.
+- **Interactive Schematics:** If a user asks about polarity, the HUD renders a generated 3D visual of the terminals rather than prose.
+- **Dynamic Charts:** Duty cycle queries generate a visual progress-chart indicating thermal tolerances.
+- **Image Referencing:** (Mocked in UI via "Diagnosis Mode") the agent surfaces relevant schematic or diagnostic photos dynamically when weld quality issues are discussed.
+
 ## Knowledge Representation
 Raw PDFs are notoriously difficult for standard OCR, especially when dealing with Polarity matrices and labeled diagrams.
 - **Structured Knowledge Base (`lib/knowledge.ts`)**: I extracted the critical constraints (Duty Cycle Matrices, Socket Polarity configurations, and Troubleshooting logic) into strongly-typed code. This prevents the LLM from hallucinating voltages or amperage limits.
